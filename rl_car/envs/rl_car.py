@@ -12,10 +12,12 @@ class Spec: # remove when env properly registered
   def __init__(self, id):
     self.id = id
 
+tile_width = 40
+
 class RLCar(gym.Env):
   metadata = {'render.modes': ['human', 'trajectories']}
 
-  def __init__(self, file_name = '/home/bartek/rl-car/maps/map4.txt', num_rays = 12, draw_rays = True, n_trajectories = 10**5, step_cost = 0.1):
+  def __init__(self, file_name = '/home/bartek/rl-car/maps/map4.txt', num_rays = 12, draw_rays = True, n_trajectories = 10**4, step_cost = 0.1):
     super().__init__()
     self._max_episode_steps = 200
 
@@ -68,6 +70,7 @@ class RLCar(gym.Env):
       # time exceeded
       reward = -100 # or -150 or -50 or 0 or 50 ??
       done = True
+      end_color = (102, 0, 204)
     elif self.ground == ' ' or self.ground == 'O':
       # nothing happens
       reward = -self.step_cost
@@ -76,6 +79,7 @@ class RLCar(gym.Env):
       # we hit a wall
       reward = -100
       done = True
+      end_color = (255, 102, 0)
     elif self.ground == 'C':
       # we ran over a cat
       reward = -100
@@ -84,10 +88,15 @@ class RLCar(gym.Env):
       # we reached the finish line
       reward = 1000
       done = True
+      end_color = (0, 255, 0)
     else:
       raise Exception('Unsupported ground')
 
     if done:
+      if self.color is not None and self.batch is not None:
+        end = shapes.Circle(car.pos.x*tile_width, car.pos.y*tile_width, 4, color=end_color, batch=self.batch)
+        end.opacity = 128
+        self.trajectories[self.i%self.n_trajectories].append(end)
       self.i += 1
       if self.color is not None and self.batch is not None:
         self.trajectories[self.i%self.n_trajectories] = []
