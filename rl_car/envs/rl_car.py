@@ -245,7 +245,7 @@ class Map:
             0 <= pos.y < self.height and\
             self[pos] != '#'
               
-  def get_closest(self, pos, field = '#', jump = 0.2, num_steps = 11, rays = 12, batch = None):
+  def get_closest(self, pos, field = '#', jump = 0.1, num_steps = 11, rays = 12, batch = None):
     if batch is not None:
         self.rays = []
     closest = np.zeros(rays)
