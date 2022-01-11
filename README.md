@@ -12,3 +12,4 @@
     ...
     ```
 - you can set different color for training and testing
+![rl-car env screenshot](rlcar.png)
