@@ -59,8 +59,8 @@ class RLCarV0(gym.Env):
     obs = [
       np.array([self.car.vel.x, self.car.vel.y]),
       self.map.get_closest(self.car.pos, '#', rays=self.num_rays, batch=self.draw_rays and self.batch or None),
-      # self.map.get_closest(self.car.pos, 'O'), # wykrywanie oleju (nie robię narazie)
-      # self.map.get_closest(self.car.pos, 'C'), # wykrywanie kota  (nie robię narazie)
+      self.map.get_closest(self.car.pos, 'O', rays=self.num_rays),
+      self.map.get_closest(self.car.pos, 'C', rays=self.num_rays),
       self.map.get_closest(self.car.pos, 'M', rays=self.num_rays)
     ]
     return np.concatenate(obs)
