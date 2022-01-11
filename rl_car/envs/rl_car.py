@@ -15,6 +15,10 @@ if False and torch.cuda.is_available():
 else:
     FloatTensor = torch.FloatTensor
 
+import os
+package_directory = os.path.dirname(os.path.abspath(__file__))
+map_path = os.path.join(package_directory, '../../maps/map1.txt')
+
 # ignore
 class Spec: # remove when env properly registered
   def __init__(self, id):
@@ -25,7 +29,7 @@ tile_width = 40
 class RLCarV0(gym.Env):
   metadata = {'render.modes': ['human', 'trajectories']}
 
-  def __init__(self, file_name = '/home/bartek/rl-car/maps/map4.txt', num_rays = 12, draw_rays = True, n_trajectories = 10**4, step_cost = 0.1):
+  def __init__(self, file_name = map_path, num_rays = 12, draw_rays = True, n_trajectories = 10**4, step_cost = 0.1):
     super().__init__()
     self._max_episode_steps = 200
 
@@ -131,7 +135,7 @@ class RLCarV0(gym.Env):
   def set_color(self, color):
     self.color = color    
     
-  def render(self, mode='human', close=False):
+  def render(self, mode='human'):
     if mode == 'human':
       if self.window is None:
         self.window = pyglet.window.Window(self.map.width*tile_width, self.map.height*tile_width)
@@ -169,7 +173,7 @@ class RLCarV0(gym.Env):
 
 
 class RLCarV1(RLCarV0):
-  def __init__(self, file_name = '/home/bartek/rl-car/maps/map4.txt', n_trajectories = 11, step_cost = 0.05*0, heatmap_resolution = 5):
+  def __init__(self, file_name = map_path, n_trajectories = 11, step_cost = 0.05*0, heatmap_resolution = 5):
     super().__init__(file_name, num_rays=0, draw_rays=False, n_trajectories=n_trajectories, step_cost=step_cost)
     self.observation_space = spaces.Box(
       low=np.array([0, 0], dtype=np.float32),
@@ -181,10 +185,6 @@ class RLCarV1(RLCarV0):
     self.mouse_x = 0
     self.mouse_y = 0
     
-  def get_obs(self):
-    obs = np.array([self.car.pos.x/self.map.width, self.car.pos.y/self.map.height])
-    return obs
-
   def update_heatmap(self, actors):
     points = np.array(list(np.ndindex(self.map.width*self.heatmap_resolution, self.map.height*self.heatmap_resolution)), dtype=np.float32)
     points[:,0] += 0.5
@@ -206,7 +206,7 @@ class RLCarV1(RLCarV0):
           self.heatmaps[j][y][x].color = color[0]*255, color[1]*255, color[2]*255
           i += 1
 
-  def render(self, mode='human', num_actors=1):
+  def render(self, mode='human', num_actors=0):
     if self.window is None:
       y_screens = math.ceil((num_actors+1)/4)
       x_screens = min(num_actors+1, 4)
@@ -238,15 +238,15 @@ class RLCarV1(RLCarV0):
       self.map.draw(self.batch, draw_blanks=False)
       num_dir = 16
       self.circles = []
-      for i in range(num_dir):
-        angle = i/num_dir # angle in [0, 1]
-        color = colorsys.hsv_to_rgb(angle, 1, 1)
-        angle *= math.tau # angle in [0, \tau]
-        circle = shapes.Circle(tile_width*0.5+tile_width*0.3*math.cos(angle),
-                               tile_width*0.5+tile_width*0.3*math.sin(angle),
-                               tile_width*0.05, batch=self.batch, segments=16,
-                               color=(int(color[0]*255), int(color[1]*255), int(color[2]*255)))
-        self.circles.append(circle)
+      # for i in range(num_dir):
+      #   angle = i/num_dir # angle in [0, 1]
+      #   color = colorsys.hsv_to_rgb(angle, 1, 1)
+      #   angle *= math.tau # angle in [0, \tau]
+      #   circle = shapes.Circle(tile_width*0.5+tile_width*0.3*math.cos(angle),
+      #                          tile_width*0.5+tile_width*0.3*math.sin(angle),
+      #                          tile_width*0.05, batch=self.batch, segments=16,
+      #                          color=(int(color[0]*255), int(color[1]*255), int(color[2]*255)))
+      #   self.circles.append(circle)
         
     self.window.clear()
     self.batch.draw()
@@ -339,7 +339,7 @@ class Vec:
     return hash((self.x, self.y))
 
 class Map:
-  def __init__(self, file_name = '~/rl-car/maps/map4.txt'):
+  def __init__(self, file_name = map_path):
     board = []
     with open(file_name, 'r') as f:
       for line in f:
